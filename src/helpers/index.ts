@@ -16,7 +16,7 @@ const loadImages = async (tags: string[]) => {
         params: {
           method: 'flickr.photos.search',
           api_key: apiKey,
-          tags: "cat",
+          tags: tags.join(" "),
           page: 1,
           per_page: 500,
           format: 'json',
