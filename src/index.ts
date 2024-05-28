@@ -1,6 +1,6 @@
 import express from 'express';
 import { AppDataSource } from './data-source';
-import loadImages from './helpers';
+import { loadImages, scheduledJob } from './helpers';
 import * as DBInit from './database/init';
 const cors = require('cors');
 
@@ -10,7 +10,6 @@ AppDataSource.initialize().then(() => {
   app.use(cors());
 
   app.get('/images/remove/:id', async (req, res) => {
-    console.log('here')
     try {
       const { id } = req.params;
       const dbConnection = await DBInit.connect();
@@ -41,12 +40,12 @@ AppDataSource.initialize().then(() => {
       ) 
     const topTags = await dbConnection.query(
       `
-      select tag, count(*) as frequency from (
-      select unnest(regexp_split_to_array(tags, ' ')) as tag from photos
-      ) as tag_table
-      group by tag
-      order by frequency desc
-      limit 10
+      SELECT tag, COUNT(*) AS frequency FROM (
+      SELECT unnest(regexp_split_to_array(tags, ' ')) AS tag FROM photos
+      ) AS tag_table
+      GROUP BY tag
+      ORDER BY frequency DESC
+      LIMIT 10
       `
     );
 
@@ -57,6 +56,7 @@ AppDataSource.initialize().then(() => {
   })
 
   loadImages(["cat"]);
+  scheduledJob.start();
 
   return app.listen(process.env.PORT, () => {
     console.log("APP is running on port: ", process.env.PORT);
